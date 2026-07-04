@@ -106,9 +106,8 @@
 
 ## 📄 相关文档
 
-- [开发计划](./DEVELOPMENT_PLAN.md)
 - [架构文档](./ARCHITECTURE.md)
-- [功能规划](./FEATURES.md)
+
 
 ---
 
