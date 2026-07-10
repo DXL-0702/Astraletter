@@ -1,5 +1,17 @@
 import type { ChatMessage } from "./types"
 
+export type Sentiment = "positive" | "neutral" | "negative"
+
+/** 单条消息情感分类（轻量启发式，无 AI）。供星图确定性生成兜底使用。 */
+export function classifySentiment(text: string): Sentiment {
+  let score = 0
+  for (const w of POSITIVE) if (text.includes(w)) score++
+  for (const w of NEGATIVE) if (text.includes(w)) score--
+  if (score > 0) return "positive"
+  if (score < 0) return "negative"
+  return "neutral"
+}
+
 /**
  * 轻量（无 AI、无依赖）聚合情感色相估计，用于成功时给 Galaxy 一个「 payoff 」色相。
  * 与 DESIGN.md §6 的情感配色映射一致：

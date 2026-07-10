@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { CheckCircle2, RotateCcw, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,6 +10,8 @@ import CountUp from "@/components/rb/CountUp"
 import type { ImportFlow } from "@/hooks/useImportFlow"
 import type { ChatSource } from "@/lib/parsers/types"
 import { formatBytes, formatTimeSpan } from "@/lib/parsers/format"
+import { generateUniverse } from "@/lib/universe/generate"
+import { useUniverse } from "@/lib/universe/store"
 
 const SOURCE_LABEL: Record<ChatSource, string> = {
   wechat: "微信",
@@ -27,6 +30,8 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 
 export default function SuccessPanel({ flow }: { flow: ImportFlow }) {
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const router = useRouter()
+  const { setUniverse } = useUniverse()
 
   // 焦点管理：hooks 必须在任何 early return 之前
   useEffect(() => {
@@ -34,8 +39,14 @@ export default function SuccessPanel({ flow }: { flow: ImportFlow }) {
   }, [])
 
   if (flow.phase.kind !== "success") return null
-  const { meta } = flow.phase.result
+  const { meta, messages } = flow.phase.result
   const showBytes = meta.fileSize > 0
+
+  // 生成星宇（确定性，立即）→ 写入 provider → 跳转。AI 增强在星宇页后台进行（M2）。
+  const handleGenerate = () => {
+    setUniverse(generateUniverse(messages), messages)
+    router.push("/star-universe")
+  }
 
   return (
     <div className="panel-elevated glow-success relative flex flex-col gap-6 px-6 py-8">
@@ -87,10 +98,10 @@ export default function SuccessPanel({ flow }: { flow: ImportFlow }) {
         ))}
       </div>
 
-      {/* 行动：主 CTA 禁用（诚实标记阶段边界） + 次级重选 */}
+      {/* 行动：生成星宇（立即） + 次级重选 */}
       <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-        <Button variant="starlight" className="sm:flex-1" disabled>
-          <Sparkles className="h-4 w-4" /> 生成星宇 · 即将开放
+        <Button variant="starlight" className="sm:flex-1" onClick={handleGenerate}>
+          <Sparkles className="h-4 w-4" /> 生成星宇
         </Button>
         <Button variant="secondary" onClick={() => flow.reset()}>
           <RotateCcw className="h-4 w-4" /> 重新选择
@@ -98,7 +109,7 @@ export default function SuccessPanel({ flow }: { flow: ImportFlow }) {
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        星图生成正在开发中 · 当前已在本地解析 {meta.messageCount} 条消息
+        在本地生成星宇 · {meta.messageCount} 条消息化作星辰
         {showBytes ? `（${formatBytes(meta.fileSize)}）` : ""}
       </p>
     </div>
