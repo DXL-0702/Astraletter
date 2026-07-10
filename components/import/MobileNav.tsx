@@ -1,9 +1,9 @@
 "use client"
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu"
-import { HelpCircle, Menu, Shield, Sparkles } from "lucide-react"
+import { Menu, Shield, Sparkles } from "lucide-react"
 
-type Target = "how" | "privacy" | "help"
+type Target = "how" | "privacy"
 
 interface Props {
   onNavigate: (target: Target) => void
@@ -11,11 +11,10 @@ interface Props {
 
 const ITEMS: { icon: typeof Sparkles; label: string; target: Target; color: string }[] = [
   { icon: Sparkles, label: "如何生成", target: "how", color: "text-starlight" },
-  { icon: HelpCircle, label: "如何导出", target: "help", color: "text-muted-foreground" },
   { icon: Shield, label: "隐私承诺", target: "privacy", color: "text-success" },
 ]
 
-/** 移动端导航（Casey）：复用已装的 @radix-ui/react-dropdown-menu，键盘/焦点由 Radix 管理。 */
+/** 移动端导航：点按打开对应叙事 Dialog（与桌面一致）。键盘/焦点由 Radix 管理。 */
 export default function MobileNav({ onNavigate }: Props) {
   return (
     <DropdownMenu.Root>
@@ -31,7 +30,7 @@ export default function MobileNav({ onNavigate }: Props) {
         <DropdownMenu.Content
           align="end"
           sideOffset={8}
-          className="z-modal min-w-[180px] rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-float backdrop-blur-xl data-[state=open]:animate-in data-[state=open]:fade-in-0"
+          className="z-modal min-w-[176px] rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-float backdrop-blur-xl data-[state=open]:animate-in data-[state=open]:fade-in-0"
         >
           {ITEMS.map((it) => (
             <DropdownMenu.Item

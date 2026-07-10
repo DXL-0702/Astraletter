@@ -26,8 +26,8 @@ shadcn 的语义 token 全部 alias 到产品 token，避免双套配色：
 
 ## 2. 字体
 - 正文 / UI：`Sora` + 中文回退 PingFang/Noto Sans SC。
-- 展示标题 / 星座名 / 星语：`Cinzel`（拉丁，碑刻星图感）+ `ZCOOL XiaoWei`（中文，书写感）。
-- 艺术字**只用于展示位**，不进正文；`display=swap`，按 unicode-range 分片加载。
+- 展示标题 / 星座名 / 星语：`Marcellus`（拉丁，罗马碑刻星图感）+ `Noto Serif SC`（中文，宋体，锐利不糊）。
+- 艺术字**只用于展示位**，不进正文；`display=swap`。
 
 ## 3. 目录结构
 ```

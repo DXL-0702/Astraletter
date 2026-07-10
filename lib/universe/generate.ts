@@ -6,10 +6,10 @@ import type { AIEnhancement, Cluster, Star, UniverseData, UniverseMeta } from ".
 /** 渲染上限：超过则沿时间线均匀采样，保证万级消息也不卡。 */
 const MAX_STARS = 3000
 
-/** 银河盘几何（场景单位） */
-const INNER_R = 6
-const OUTER_R = 58
-const THICKNESS = 4
+/** 银河盘几何（场景单位；放大以便飞行漫游有纵深） */
+const INNER_R = 12
+const OUTER_R = 120
+const THICKNESS = 16
 const SPIRAL_TURNS = 3
 
 /** 情感 → HSL hue（对齐 DESIGN.md §6 情感配色）。 */
