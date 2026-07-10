@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Sora } from "next/font/google"
 import "./globals.css"
+import { UniverseProvider } from "@/lib/universe/store"
 
 const sora = Sora({
   subsets: ["latin"],
@@ -29,7 +30,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={sora.variable}>{children}</body>
+      <body className={sora.variable}>
+        <UniverseProvider>{children}</UniverseProvider>
+      </body>
     </html>
   )
 }
