@@ -1,6 +1,13 @@
 # Astraletter 架构文档
 
-本文档展示 Astraletter 项目的完整技术架构。
+本文档展示 Astraletter 项目的**目标**技术架构（完整形态）。
+
+> ### 📌 状态与偏差说明（2026-07-10）
+> 本文档描述的是**目标架构**，并非当前已全部落地。当前进度（Phase 1 进行中）：
+> - **已落地**：UI 层（Next.js 14 + React 18 + shadcn/ui）、聊天解析层（`lib/parsers/`，微信/WhatsApp/纯文本 + GBK）、真实导入面（`components/import/` + `hooks/`）、星空背景（ogl `Galaxy`）。
+> - **尚未引入**：React Three Fiber / Three.js（星图）、Transformers.js（本地 AI）、Hono / Bun / Neon / Drizzle / Socket.io / Lucia（后端，Phase 3）。
+> - **结构偏差**：文档假设 monorepo（`apps/web` + `apps/api`），当前为**扁平结构**（`app/` + `components/` + `lib/` + `hooks/`）；包管理为 **npm**（非 bun）。
+> - 最新进度以 [README.md 开发进度快照](./README.md) 为准。
 
 ---
 
