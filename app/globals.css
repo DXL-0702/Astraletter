@@ -56,7 +56,7 @@
 
   /* --- Typography ----------------------------------------------- */
   --font-sans: var(--font-sora), "SF Pro Display", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-  --font-display: "Cinzel", "ZCOOL XiaoWei", "Noto Serif SC", "Songti SC", Georgia, serif;
+  --font-display: "Marcellus", "Noto Serif SC", "Songti SC", Georgia, serif;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

@@ -22,7 +22,7 @@ export default function ConstellationLines({ stars }: { stars: Star[] }) {
 
   return (
     <lineSegments geometry={geometry}>
-      <lineBasicMaterial color="#cfe0ff" transparent opacity={0.1} toneMapped={false} />
+      <lineBasicMaterial color="#9db4e8" transparent opacity={0.05} toneMapped={false} />
     </lineSegments>
   )
 }
