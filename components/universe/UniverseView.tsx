@@ -49,6 +49,15 @@ export default function UniverseView() {
   // H 隐藏界面 / Esc 取消选中
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return // 在输入控件内打字时不触发快捷键
+      }
       if (e.key === "h" || e.key === "H") setUiHidden((v) => !v)
       if (e.key === "Escape") setSelected(null)
     }

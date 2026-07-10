@@ -76,6 +76,7 @@ export default function FlyController({
       last.current = { x: e.clientX, y: e.clientY }
     }
     const onUp = (e: PointerEvent) => {
+      if (!dragging.current) return // 来自非画布的释放（如点击 UI）则忽略，避免误取消选中
       const wasDragged = dragged.current
       dragging.current = false
       last.current = null
@@ -108,15 +109,16 @@ export default function FlyController({
     }
 
     el.addEventListener("pointerdown", onDown)
-    el.addEventListener("pointermove", onMove)
-    el.addEventListener("pointerup", onUp)
-    el.addEventListener("pointercancel", onUp)
+    // move/up 绑到 window：指针移出画布甚至浏览器窗口也能正确结束拖拽，避免「粘滞」
+    window.addEventListener("pointermove", onMove)
+    window.addEventListener("pointerup", onUp)
+    window.addEventListener("pointercancel", onUp)
     el.addEventListener("wheel", onWheel, { passive: false })
     return () => {
       el.removeEventListener("pointerdown", onDown)
-      el.removeEventListener("pointermove", onMove)
-      el.removeEventListener("pointerup", onUp)
-      el.removeEventListener("pointercancel", onUp)
+      window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("pointerup", onUp)
+      window.removeEventListener("pointercancel", onUp)
       el.removeEventListener("wheel", onWheel)
     }
   }, [gl, camera, pointsRef, stars, onSelect, onSpeedChange, speedRef])

@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useMemo } from "react"
+import { forwardRef, useEffect, useMemo } from "react"
 import * as THREE from "three"
 import type { Star } from "@/lib/universe/types"
 
@@ -37,6 +37,13 @@ const StarField3D = forwardRef<THREE.Points, Props>(function StarField3D(
   ref
 ) {
   const sprite = useMemo(makeStarSprite, [])
+
+  // WebGL 纹理需在卸载时显式释放，避免 GPU 内存泄漏
+  useEffect(() => {
+    return () => {
+      sprite.dispose()
+    }
+  }, [sprite])
 
   const positions = useMemo(() => {
     const a = new Float32Array(stars.length * 3)
