@@ -14,9 +14,9 @@ const SPIRAL_TURNS = 3
 
 /** 主星 = 暖色恒星光谱（情感数据）：金（正向）/ 香槟（中性）/ 余烬（负向）。全暖，与冷色星座互补。 */
 const STAR_PALETTE: Record<Sentiment, { h: number; s: number; l: number }> = {
-  positive: { h: 46, s: 0.95, l: 0.6 }, // 金
-  neutral: { h: 48, s: 0.4, l: 0.74 }, // 香槟（暖白）
-  negative: { h: 16, s: 0.9, l: 0.56 }, // 余烬
+  positive: { h: 46, s: 1.0, l: 0.6 }, // 纯金
+  neutral: { h: 48, s: 0.6, l: 0.72 }, // 香槟
+  negative: { h: 14, s: 1.0, l: 0.56 }, // 鲜明余烬红
 }
 
 function mulberry32(seed: number) {
@@ -101,7 +101,7 @@ export function generateUniverse(
     const sentiment = ai?.sentiments?.[msg.id] ?? classifySentiment(msg.text)
     const lenNorm = Math.min(1, msg.text.length / 200)
     const size = 0.18 + 0.5 * lenNorm
-    const brightness = 0.85 + 0.4 * lenNorm
+    const brightness = 0.95 + 0.35 * lenNorm
     const clusterId = ai?.clusters?.[msg.id] ?? binOf(rank)
 
     stars.push({

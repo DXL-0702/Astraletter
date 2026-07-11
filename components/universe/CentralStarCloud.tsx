@@ -2,70 +2,61 @@
 
 import { useMemo } from "react"
 import * as THREE from "three"
-import { TWINKLE_FRAG, TWINKLE_VERT, useTwinkleMaterial } from "./twinkle"
+import { buildNebulaLayer, NebulaLayer } from "./nebula"
+import type { Quality } from "./quality"
 
-const R = 38
+// 暖核配色：中心白热 → 暖金（守住「暖核/冷空间」的暖侧）
+const HOT = new THREE.Color().setHSL(50 / 360, 0.3, 0.9)
+const GOLD = new THREE.Color().setHSL(45 / 360, 0.85, 0.62)
+const COOL_WHITE = new THREE.Color().setHSL(200 / 360, 0.22, 0.72) // 外缘仅微冷白，不主导青
+const GOLD_BRIGHT = new THREE.Color().setHSL(46 / 360, 0.95, 0.66)
 
 /**
- * 银河中心恒星云：数千颗密集、暖金→白热、闪烁的微星，集中在扁平椭球核心。
- * 营造银河核的密度与体量，让整片画面更像银河星空（参考诗云的星团密度）。
+ * 银心星云：三层粒子叠加成连续、发雾、发光、有厚度的核球（而非单张光斑）。
+ *  - CoreBulge：密集低亮核球（暖白→金），加色叠加成连续银心；不闪烁。
+ *  - CoreDust：更宽的星云尘埃（金→微冷白），填补空隙、形成雾感；不闪烁。
+ *  - ResolvedCoreStars：可分辨亮星（暖金），轻微闪烁，肉眼可见的星点层。
+ * 中心亮度主要来自粒子叠加 + Bloom；CoreGlow 仅作托底 halo。
  */
-export default function CentralStarCloud({ count = 3400 }: { count?: number }) {
-  const { matRef, uniforms } = useTwinkleMaterial(2.0, 0.8)
-
-  const positions = useMemo(() => {
-    const a = new Float32Array(count * 3)
-    for (let i = 0; i < count; i++) {
-      // 三个随机相加 −1.5 ≈ 高斯，集中中心、稀疏边缘
-      const gx = Math.random() + Math.random() + Math.random() - 1.5
-      const gz = Math.random() + Math.random() + Math.random() - 1.5
-      const gy = (Math.random() + Math.random() - 1) * 0.32 // 扁盘
-      a[i * 3] = gx * R
-      a[i * 3 + 1] = gy * R
-      a[i * 3 + 2] = gz * R
-    }
-    return a
-  }, [count])
-
-  const colors = useMemo(() => {
-    const gold = new THREE.Color().setHSL(46 / 360, 0.95, 0.6)
-    const hot = new THREE.Color().setHSL(50 / 360, 0.4, 0.86) // 核心白热
-    const a = new Float32Array(count * 3)
-    for (let i = 0; i < count; i++) {
-      const x = positions[i * 3]
-      const y = positions[i * 3 + 1]
-      const z = positions[i * 3 + 2]
-      const d = Math.min(1, Math.sqrt(x * x + y * y + z * z) / R)
-      const c = hot.clone().lerp(gold, d) // 越靠中心越白热，越远越金
-      a[i * 3] = c.r
-      a[i * 3 + 1] = c.g
-      a[i * 3 + 2] = c.b
-    }
-    return a
-  }, [positions, count])
-
-  const phases = useMemo(() => {
-    const a = new Float32Array(count)
-    for (let i = 0; i < count; i++) a[i] = Math.random()
-    return a
-  }, [count])
+export default function CentralStarCloud({ quality = "high" }: { quality?: Quality }) {
+  const layers = useMemo(
+    () => ({
+      bulge: buildNebulaLayer({
+        count: quality === "high" ? 30000 : 12000,
+        radius: 26,
+        flatten: 0.5,
+        inner: HOT,
+        outer: GOLD,
+        brightness: [0.35, 0.7],
+        seed: 11,
+      }),
+      dust: buildNebulaLayer({
+        count: quality === "high" ? 50000 : 20000,
+        radius: 56,
+        flatten: 0.62,
+        inner: GOLD,
+        outer: COOL_WHITE,
+        brightness: [0.12, 0.32],
+        seed: 23,
+      }),
+      resolved: buildNebulaLayer({
+        count: quality === "high" ? 4000 : 2000,
+        radius: 42,
+        flatten: 0.6,
+        inner: GOLD_BRIGHT,
+        outer: GOLD_BRIGHT,
+        brightness: [0.7, 1.0],
+        seed: 37,
+      }),
+    }),
+    [quality]
+  )
 
   return (
-    <points>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-        <bufferAttribute attach="attributes-aColor" args={[colors, 3]} />
-        <bufferAttribute attach="attributes-aPhase" args={[phases, 1]} />
-      </bufferGeometry>
-      <shaderMaterial
-        ref={matRef}
-        vertexShader={TWINKLE_VERT}
-        fragmentShader={TWINKLE_FRAG}
-        uniforms={uniforms}
-        transparent
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
+    <>
+      <NebulaLayer data={layers.bulge} size={1.6} twinkle={0} />
+      <NebulaLayer data={layers.dust} size={2.6} twinkle={0} />
+      <NebulaLayer data={layers.resolved} size={3.2} twinkle={0.5} />
+    </>
   )
 }

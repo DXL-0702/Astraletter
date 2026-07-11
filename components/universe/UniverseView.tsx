@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { Canvas } from "@react-three/fiber"
 import { Sparkles as Sparkles3D, Stars, Stats } from "@react-three/drei"
@@ -14,6 +14,8 @@ import FlyController from "./FlyController"
 import NebulaBg from "./NebulaBg"
 import { NebulaDust, CoreGlow } from "./Atmosphere"
 import CentralStarCloud from "./CentralStarCloud"
+import { detectQuality } from "./quality"
+import { EffectComposer, Bloom } from "@react-three/postprocessing"
 import { Slider } from "@/components/ui/slider"
 import { useUniverse } from "@/lib/universe/store"
 import type { Star } from "@/lib/universe/types"
@@ -28,6 +30,7 @@ export default function UniverseView() {
 
   const pointsRef = useRef<THREE.Points | null>(null)
   const speedRef = useRef(25)
+  const quality = useMemo(() => detectQuality(), [])
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -86,12 +89,13 @@ export default function UniverseView() {
         camera={{ position: [0, 55, 170], fov: 60, near: 0.1, far: 1200 }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
       >
         <Stars radius={350} depth={120} count={6000} factor={5} saturation={0} fade speed={reducedMotion ? 0 : 0.6} />
         <Sparkles3D count={60} scale={[200, 120, 200]} size={3} speed={reducedMotion ? 0 : 0.2} opacity={0.45} color="#bcd0ff" />
-        <NebulaDust />
+        <NebulaDust quality={quality} />
         <CoreGlow />
-        <CentralStarCloud />
+        <CentralStarCloud quality={quality} />
         <StarField3D ref={pointsRef} stars={universe.stars} selectedId={selected?.id ?? null} />
         <ConstellationLines stars={universe.stars} clusters={universe.clusters} />
         <FlyController
@@ -104,6 +108,17 @@ export default function UniverseView() {
           }}
         />
         {process.env.NODE_ENV === "development" && <Stats />}
+        {!reducedMotion && (
+          <EffectComposer>
+            <Bloom
+              intensity={1.3}
+              luminanceThreshold={0.1}
+              luminanceSmoothing={0.3}
+              radius={0.82}
+              mipmapBlur
+            />
+          </EffectComposer>
+        )}
       </Canvas>
 
       {/* 中心目镜十字线（转向参考，常驻） */}
@@ -150,7 +165,7 @@ export default function UniverseView() {
               </span>
             </div>
             <p className="mt-1.5 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground/80">
-              WASD 移动 · 拖拽转向 · 滚轮缩放 · 点星看消息
+              拖拽环绕 · 滚轮缩放 · 点星聚焦 · WASD 飞行
             </p>
           </div>
         </>

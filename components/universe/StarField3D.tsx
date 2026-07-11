@@ -18,7 +18,7 @@ const StarField3D = forwardRef<THREE.Points, Props>(function StarField3D(
   { stars, selectedId },
   ref
 ) {
-  const { matRef, uniforms } = useTwinkleMaterial(4.2, 0.7)
+  const { matRef, uniforms } = useTwinkleMaterial(8, 0.9)
 
   const positions = useMemo(() => {
     const a = new Float32Array(stars.length * 3)
@@ -29,6 +29,17 @@ const StarField3D = forwardRef<THREE.Points, Props>(function StarField3D(
     })
     return a
   }, [stars])
+
+  // 逐星尺寸：消息权重 size∈[0.18,0.68] → 倍率 [0.7,1.7]，长/重消息明显更大；
+  // 选中星再放大，成为无可争议的视觉焦点。
+  const sizes = useMemo(() => {
+    const a = new Float32Array(stars.length)
+    stars.forEach((s, i) => {
+      const m = 0.7 + (Math.min(s.size, 0.68) / 0.68) * 1.0
+      a[i] = s.id === selectedId ? m * 1.6 : m
+    })
+    return a
+  }, [stars, selectedId])
 
   const colors = useMemo(() => {
     const a = new Float32Array(stars.length * 3)
@@ -53,6 +64,7 @@ const StarField3D = forwardRef<THREE.Points, Props>(function StarField3D(
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         <bufferAttribute attach="attributes-aColor" args={[colors, 3]} />
         <bufferAttribute attach="attributes-aPhase" args={[phases, 1]} />
+        <bufferAttribute attach="attributes-aSize" args={[sizes, 1]} />
       </bufferGeometry>
       <shaderMaterial
         ref={matRef}

@@ -25,6 +25,7 @@ export function makeStarSprite(): THREE.Texture {
 export const TWINKLE_VERT = /* glsl */ `
 attribute vec3 aColor;
 attribute float aPhase;
+attribute float aSize; // 逐星尺寸倍率（消息权重），缺省 1.0
 uniform float uSize;
 uniform float uTime;
 uniform float uTwinkle;
@@ -32,10 +33,13 @@ varying vec3 vColor;
 varying float vTw;
 void main() {
   vColor = aColor;
-  float tw = 1.0 - uTwinkle * (0.5 - 0.5 * sin(uTime * 1.8 + aPhase * 6.2831853));
+  // 双频叠加 → 不规则闪烁（更像真实恒星），幅度由 uTwinkle 控制
+  float s1 = sin(uTime * 2.4 + aPhase * 6.2831853);
+  float s2 = sin(uTime * 4.1 + aPhase * 12.5664);
+  float tw = 1.0 - uTwinkle * (0.5 - 0.5 * (s1 * 0.65 + s2 * 0.35));
   vTw = tw;
   vec4 mv = modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = uSize * (0.78 + 0.45 * tw) * (300.0 / max(-mv.z, 0.1));
+  gl_PointSize = uSize * aSize * (0.7 + 0.5 * tw) * (300.0 / max(-mv.z, 0.1));
   gl_Position = projectionMatrix * mv;
 }
 `
