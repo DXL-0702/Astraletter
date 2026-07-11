@@ -12,11 +12,11 @@ const OUTER_R = 120
 const THICKNESS = 16
 const SPIRAL_TURNS = 3
 
-/** 情感 → HSL hue（对齐 DESIGN.md §6 情感配色）。 */
-const HUE: Record<Sentiment, number> = {
-  positive: 40, // 琥珀
-  neutral: 210, // 深空蓝
-  negative: 345, // 玫瑰
+/** 主星 = 暖色恒星光谱（情感数据）：金（正向）/ 香槟（中性）/ 余烬（负向）。全暖，与冷色星座互补。 */
+const STAR_PALETTE: Record<Sentiment, { h: number; s: number; l: number }> = {
+  positive: { h: 46, s: 0.95, l: 0.6 }, // 金
+  neutral: { h: 48, s: 0.4, l: 0.74 }, // 香槟（暖白）
+  negative: { h: 16, s: 0.9, l: 0.56 }, // 余烬
 }
 
 function mulberry32(seed: number) {
@@ -40,11 +40,13 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 }
 
 function sentimentColor(s: Sentiment, brightness: number): [number, number, number] {
-  const [r, g, b] = hslToRgb(HUE[s] / 360, 0.62, 0.55)
+  const p = STAR_PALETTE[s]
+  const [r, g, b] = hslToRgb(p.h / 360, p.s, p.l)
   return [r * brightness, g * brightness, b * brightness]
 }
 
-const CLUSTER_PALETTE = [80, 210, 270, 345, 140, 30, 190, 300, 100, 240]
+/** 星座 = 冷色宝石调（结构线/目录），与暖色主星互补、不撞色（青/水蓝/薄荷）。 */
+const CLUSTER_PALETTE = [176, 160, 190, 150, 170]
 
 /** 沿时间线均匀采样，保持时间分布。导出供 AI 层处理同一批星辰。 */
 export function sampleStarMessages(messages: ChatMessage[], max = MAX_STARS): ChatMessage[] {
@@ -99,7 +101,7 @@ export function generateUniverse(
     const sentiment = ai?.sentiments?.[msg.id] ?? classifySentiment(msg.text)
     const lenNorm = Math.min(1, msg.text.length / 200)
     const size = 0.18 + 0.5 * lenNorm
-    const brightness = 0.6 + 0.5 * lenNorm
+    const brightness = 0.85 + 0.4 * lenNorm
     const clusterId = ai?.clusters?.[msg.id] ?? binOf(rank)
 
     stars.push({
@@ -133,7 +135,7 @@ export function generateUniverse(
     clusters.push({
       id: c,
       name: clusterName(c, firstMessage),
-      color: hslToRgb(CLUSTER_PALETTE[c % CLUSTER_PALETTE.length] / 360, 0.5, 0.6),
+      color: hslToRgb(CLUSTER_PALETTE[c % CLUSTER_PALETTE.length] / 360, 0.65, 0.6),
       starIds: inCluster.map((s) => s.id),
       center,
     })
