@@ -425,3 +425,45 @@
     box-shadow: 0 0 28px oklch(0.80 0.16 80 / 0.45);
   }
 }
+
+/* 情感着色星云：多层 screen 混合色块 + 缓慢漂移（reduced-motion 由全局规则降级为静止） */
+.neb-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(64px);
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.neb-blob-a {
+  width: 72vmax;
+  height: 72vmax;
+  left: -12%;
+  top: -14%;
+  animation: neb-a 40s ease-in-out infinite;
+}
+.neb-blob-b {
+  width: 60vmax;
+  height: 60vmax;
+  right: -14%;
+  bottom: -18%;
+  animation: neb-b 48s ease-in-out infinite;
+}
+.neb-blob-c {
+  width: 56vmax;
+  height: 56vmax;
+  left: 28%;
+  top: 32%;
+  animation: neb-c 56s ease-in-out infinite;
+}
+@keyframes neb-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5vmax, 3vmax) scale(1.08); }
+}
+@keyframes neb-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-4vmax, -3vmax) scale(1.1); }
+}
+@keyframes neb-c {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(3vmax, -4vmax) scale(0.94); }
+}

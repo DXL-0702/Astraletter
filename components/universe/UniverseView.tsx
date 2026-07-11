@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { Canvas } from "@react-three/fiber"
 import { Sparkles as Sparkles3D, Stars, Stats } from "@react-three/drei"
@@ -11,15 +11,14 @@ import ConstellationLines from "./ConstellationLines"
 import UniversePanels from "./UniversePanels"
 import StarDetail from "./StarDetail"
 import FlyController from "./FlyController"
+import NebulaBg from "./NebulaBg"
+import { NebulaDust, CoreGlow } from "./Atmosphere"
+import CentralStarCloud from "./CentralStarCloud"
+import { detectQuality } from "./quality"
+import { EffectComposer, Bloom } from "@react-three/postprocessing"
 import { Slider } from "@/components/ui/slider"
 import { useUniverse } from "@/lib/universe/store"
 import type { Star } from "@/lib/universe/types"
-
-const NEBULA_BG = {
-  background:
-    "radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.10 0.04 260 / 0.55), transparent 70%)," +
-    "linear-gradient(180deg, #06070d 0%, #05060b 100%)",
-}
 
 export default function UniverseView() {
   const { universe, messages } = useUniverse()
@@ -27,20 +26,15 @@ export default function UniverseView() {
   const [selectedCluster, setSelectedCluster] = useState<number | null>(null)
   const [reducedMotion, setReducedMotion] = useState(false)
   const [uiHidden, setUiHidden] = useState(false)
-  const [speedDisplay, setSpeedDisplay] = useState(5)
+  const [speedDisplay, setSpeedDisplay] = useState(25)
 
   const pointsRef = useRef<THREE.Points | null>(null)
-  const speedRef = useRef(5)
+  const speedRef = useRef(25)
+  const quality = useMemo(() => detectQuality(), [])
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const update = () => {
-      setReducedMotion(mq.matches)
-      if (mq.matches) {
-        speedRef.current = 0
-        setSpeedDisplay(0)
-      }
-    }
+    const update = () => setReducedMotion(mq.matches)
     update()
     mq.addEventListener("change", update)
     return () => mq.removeEventListener("change", update)
@@ -89,28 +83,42 @@ export default function UniverseView() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-[#05060b]">
-      <div className="pointer-events-none absolute inset-0" style={NEBULA_BG} aria-hidden />
+      <NebulaBg />
 
       <Canvas
         camera={{ position: [0, 55, 170], fov: 60, near: 0.1, far: 1200 }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
       >
-        <Stars radius={350} depth={120} count={5000} factor={5} saturation={0} fade speed={reducedMotion ? 0 : 0.4} />
+        <Stars radius={350} depth={120} count={6000} factor={5} saturation={0} fade speed={reducedMotion ? 0 : 0.6} />
         <Sparkles3D count={60} scale={[200, 120, 200]} size={3} speed={reducedMotion ? 0 : 0.2} opacity={0.45} color="#bcd0ff" />
+        <NebulaDust quality={quality} />
+        <CoreGlow />
+        <CentralStarCloud quality={quality} />
         <StarField3D ref={pointsRef} stars={universe.stars} selectedId={selected?.id ?? null} />
-        <ConstellationLines stars={universe.stars} />
+        <ConstellationLines stars={universe.stars} clusters={universe.clusters} />
         <FlyController
           pointsRef={pointsRef}
           stars={universe.stars}
           speedRef={speedRef}
-          onSpeedChange={setSpeed}
           onSelect={(s) => {
             setSelected(s)
             if (s) setSelectedCluster(s.clusterId)
           }}
         />
         {process.env.NODE_ENV === "development" && <Stats />}
+        {!reducedMotion && (
+          <EffectComposer>
+            <Bloom
+              intensity={1.3}
+              luminanceThreshold={0.1}
+              luminanceSmoothing={0.3}
+              radius={0.82}
+              mipmapBlur
+            />
+          </EffectComposer>
+        )}
       </Canvas>
 
       {/* 中心目镜十字线（转向参考，常驻） */}
@@ -142,22 +150,22 @@ export default function UniverseView() {
           <div className="absolute bottom-4 left-1/2 z-panel w-[min(92vw,420px)] -translate-x-1/2">
             <div className="panel flex items-center gap-3 px-4 py-2.5">
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                速度
+                移动
               </span>
               <Slider
                 value={[speedDisplay]}
                 min={0}
-                max={70}
+                max={80}
                 step={1}
                 onValueChange={(v) => setSpeed(v[0])}
                 className="flex-1"
               />
-              <span className="w-20 text-right font-mono text-[10px] text-starlight">
-                {(speedDisplay / 5).toFixed(2)}× · {speedDisplay} u/s
+              <span className="w-16 text-right font-mono text-[10px] text-starlight">
+                {speedDisplay} u/s
               </span>
             </div>
             <p className="mt-1.5 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground/80">
-              拖拽转向 · 滚轮/滑块调速 · 点星看消息
+              拖拽环绕 · 滚轮缩放 · 点星聚焦 · WASD 飞行
             </p>
           </div>
         </>

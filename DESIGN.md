@@ -75,3 +75,35 @@ critique 指出的功能缺口已在真实导入面（非 mock）一次性补齐
 
 ### 7.1 下一轮暂缓项
 Web Worker 化解析、真实情感模型（Transformers.js）、R3F 星宇生成、截图 OCR、IndexedDB 持久化、双人授权。
+
+## 8. 星宇漫游引擎（`/star-universe`）
+
+R3F + three.js 全景相机，位于 [components/universe/FlyController.tsx](components/universe/FlyController.tsx)；**不使用 OrbitControls**。默认 galaxy-orbit（环绕星宇中心），解决「拖拽像原地摇镜头」——拖拽让相机**位置沿球面变化**产生视差，而非只改朝向。
+
+### 8.1 相机状态机
+
+| 模式 | 进入 | 行为 |
+|---|---|---|
+| **galaxy-orbit**（默认） | 初始 / 点虚空 / Esc | `target=[0,0,0]`；拖拽改 `orbitYaw/Pitch` → 球坐标算 `desiredPos` → `camera.position.lerp(desired, 1-pow(0.0025,dt))`，`Matrix4.lookAt`+`Quaternion.slerp` 平滑看向 target |
+| **target-lock** | 点选一颗星 | `target=星位置`、`orbitDist=min(原,42)` → 镜头平滑飞近并环绕该星；Esc / 点虚空 / WASD 解锁回 orbit |
+| **free-fly** | 按 WASD / 方向键 | 从真实 `camera.quaternion` 反推 yaw/pitch（无跳变）→ 临界阻尼弹簧转向 + `fwd/right` 平移；滚轮沿视线推拉 |
+
+状态切换时统一 `syncOrbitFromCamera` / `syncFreeFromCamera` 从当前相机反推参数，保证无缝衔接。Canvas `onCreated` 使初始 `camera.lookAt(0,0,0)`。
+
+### 8.2 输入与手势
+- **拖拽**：orbit 改 `orbitYaw/Pitch`、free-fly 改第一人称 yaw/pitch；位移 >5px 判定为拖拽（不触发选星）。
+- **滚轮**：orbit/target-lock 缩放 `orbitDist`（钳制 `[25,420]`，稳定不穿心）；free-fly 沿视线 dolly（阻尼衰减）。
+- **点按**（未拖拽）：`raycaster.intersectObject(pointsRef)` 命中星 → `onSelect` + target-lock；命中虚空 → 解锁回 orbit + 取消选中。
+- **Esc**：解锁回 orbit（与面板 Esc 取消选中并存）。
+
+### 8.3 松手 / 空闲 / 移动端
+- **松手无释放惯性**（刻意）：`orbitYaw` 冻结，相机由 lerp 平滑滑到松手位后**自然停住**，不继续公转/旋转镜头。
+- **空闲巡航**：仅 orbit 模式、`IDLE_DELAY` 无操作、非 reduced-motion → `orbitYaw += 慢速`；任意输入即停（不快速接管）。
+- **移动端**：canvas `touch-action:none` + `setPointerCapture` → 拖拽不滚页面；`pointercancel` 只清状态、不触发选星。
+
+### 8.4 性能
+- 热路径复用 `useRef` 的 `Vector3/Quaternion/Matrix4`（零分配）；组件卸载清理全部监听。
+- 选星用 `pointsRef` 射线检测，与最终相机姿态一致；数据星为自定义闪烁 shader（顶点属性 `aColor/aPhase`），射线检测走几何 position 不受 shader 影响。
+
+### 8.5 调节旋钮（`FlyController.tsx` 顶部常量）
+`SMOOTH=0.0025`（orbit 跟手 / 松手滑停时长，越小越柔越长）· `ORBIT_GAIN=0.005` · `FREE_GAIN=0.0026` · `PITCH_LIMIT=1.4` · `MIN/MAX_DIST=25/420` · `LOCK_DIST=42` · `IDLE_DELAY=8000` · `IDLE_ORBIT_SPEED=0.04` · `SPRING=0.15`。
