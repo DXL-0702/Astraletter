@@ -11,7 +11,7 @@
 
 ### 产品层（产品 UI 直接使用）
 - 颜色：`--bg` `--surface` `--surface-elevated` `--surface-highlight` `--border` `--border-strong` `--ink` `--ink-muted` `--primary` `--starlight` `--magic` `--danger` `--success`
-- 字体：`--font-sans`（Sora）`--font-display`（Cinzel + ZCOOL XiaoWei）
+- 字体：`--font-sans`（Sora）`--font-display`（Marcellus + Noto Serif SC）
 - 间距 / 圆角 / 阴影辉光 / 动效 / z-index：见 `:root`
 
 ### shadcn 桥接层（让 shadcn/ui 原语共享同一主题）
@@ -25,7 +25,7 @@ shadcn 的语义 token 全部 alias 到产品 token，避免双套配色：
 - `magic`：AI / 星语翻译的冷紫。
 
 ## 2. 字体
-- 正文 / UI：`Sora` + 中文回退 PingFang/Noto Sans SC。
+- 正文 / UI：`Sora` + 中文回退 PingFang SC / Microsoft YaHei / system-ui。
 - 展示标题 / 星座名 / 星语：`Marcellus`（拉丁，罗马碑刻星图感）+ `Noto Serif SC`（中文，宋体，锐利不糊）。
 - 艺术字**只用于展示位**，不进正文；`display=swap`。
 
@@ -33,7 +33,7 @@ shadcn 的语义 token 全部 alias 到产品 token，避免双套配色：
 ```
 app/
   globals.css        # token + 基础组件类（.panel/.btn/.lens/.reticle/.starfield/.dropzone[data-state] …）
-  layout.tsx         # 字体加载（Sora via next/font；Cinzel/ZCOOL/Noto via <link>）
+  layout.tsx         # 字体加载（Sora via next/font；Marcellus/Noto Serif SC via <link>）
   page.tsx           # RSC 壳，渲染 <ImportExperience />
 components/
   ui/                # shadcn 风格原语（Button/Input/Label/Badge/Skeleton/Dialog/Tooltip/Slider）
@@ -74,7 +74,7 @@ critique 指出的功能缺口已在真实导入面（非 mock）一次性补齐
 - sessionStorage 仅持久化成功态的 meta+sample 与粘贴草稿，绝不持久化原始聊天正文。
 
 ### 7.1 下一轮暂缓项
-Web Worker 化解析、真实情感模型（Transformers.js）、R3F 星宇生成、截图 OCR、IndexedDB 持久化、双人授权。
+Web Worker 化解析、真实情感模型（Transformers.js）、截图 OCR、IndexedDB 持久化、双人授权、时间光河、AI 星语翻译。
 
 ## 8. 星宇漫游引擎（`/star-universe`）
 
@@ -106,4 +106,13 @@ R3F + three.js 全景相机，位于 [components/universe/FlyController.tsx](com
 - 选星用 `pointsRef` 射线检测，与最终相机姿态一致；数据星为自定义闪烁 shader（顶点属性 `aColor/aPhase`），射线检测走几何 position 不受 shader 影响。
 
 ### 8.5 调节旋钮（`FlyController.tsx` 顶部常量）
-`SMOOTH=0.0025`（orbit 跟手 / 松手滑停时长，越小越柔越长）· `ORBIT_GAIN=0.005` · `FREE_GAIN=0.0026` · `PITCH_LIMIT=1.4` · `MIN/MAX_DIST=25/420` · `LOCK_DIST=42` · `IDLE_DELAY=8000` · `IDLE_ORBIT_SPEED=0.04` · `SPRING=0.15`。
+`SMOOTH=0.0025`（orbit 跟手 / 松手滑停时长，越小越柔越长）· `ORBIT_GAIN=0.005` · `FREE_GAIN=0.0026` · `PITCH_LIMIT=1.4` · `MIN/MAX_DIST=25/420` · `LOCK_DIST=42` · `IDLE_DELAY=2000` · `IDLE_ORBIT_SPEED=0.04` · `SPRING=0.15`。
+
+## 9. 星宇渲染构成（当前已落地）
+
+- **冷空间底色**：`NebulaBg` 的 CSS 星云漂移 + drei `Stars` / `Sparkles`，作为深空背景。
+- **中心恒星云**：`CentralStarCloud` 三层 shader points（core bulge / dust / resolved stars）叠加 Bloom，形成暖金银心。
+- **外围尘埃**：`NebulaDust` 大尺度冷青点云，为中心云和数据星盘提供近/中景视差。
+- **数据星辰**：`StarField3D` 自定义闪烁 shader，消息权重控制大小，启发式情感控制冷蓝 / 钢白 / 深红。
+- **结构线**：`ConstellationLines` 连接同簇相邻星，当前星座由时间窗生成。
+- **目镜界面**：`UniversePanels` + `StarDetail` 展示统计、星座目录、选中消息、情感图例与 Phase 2 星语占位。

@@ -2,11 +2,14 @@
 
 本文档展示 Astraletter 项目的**目标**技术架构（完整形态）。
 
-> ### 📌 状态与偏差说明（2026-07-10）
-> 本文档描述的是**目标架构**，并非当前已全部落地。当前进度（Phase 1 进行中）：
-> - **已落地**：UI 层（Next.js 14 + React 18 + shadcn/ui）、聊天解析层（`lib/parsers/`，微信/WhatsApp/纯文本 + GBK）、真实导入面（`components/import/` + `hooks/`）、星空背景（ogl `Galaxy`）。
-> - **尚未引入**：React Three Fiber / Three.js（星图）、Transformers.js（本地 AI）、Hono / Bun / Neon / Drizzle / Socket.io / Lucia（后端，Phase 3）。
-> - **结构偏差**：文档假设 monorepo（`apps/web` + `apps/api`），当前为**扁平结构**（`app/` + `components/` + `lib/` + `hooks/`）；包管理为 **npm**（非 bun）。
+> ### 📌 状态与偏差说明（2026-07-15）
+> 本文档描述的是**目标架构**，并非当前已全部落地。当前进度（Phase 1 已进入部署验证）：
+> - **已落地**：UI 层（Next.js 14 + React 18 + shadcn/ui）、聊天解析层（`lib/parsers/`，微信/WhatsApp/纯文本 + GBK）、真实导入面（`components/import/` + `hooks/`）、确定性星宇生成（`lib/universe/`）、R3F 星宇渲染与全景漫游（`components/universe/` + `app/star-universe`）。
+> - **已引入但暂缓接线**：Transformers.js 依赖、AI worker/hook/types 已保留，但当前页面不调用，不进入活动功能路径；作为 Phase 1.5 单独评估。
+> - **尚未引入**：Hono / Bun / Neon / Drizzle / Socket.io / Lucia（后端，Phase 3）、AR/WebXR、长期留存与账户系统。
+> - **结构偏差**：文档目标形态假设 monorepo（`apps/web` + `apps/api`），当前为**扁平结构**（`app/` + `components/` + `lib/` + `hooks/`）；包管理为 **npm**（非 bun）。
+> - **版本偏差**：当前 R3F 栈为 React Three Fiber v8 + Drei v9 + Three.js 0.185，目标架构中的 R3F v9/WebGPU 属于后续优化方向。
+> - **部署偏差**：当前首发策略为 Vercel 托管 + 阿里云域名解析；Cloudflare/阿里云 CDN 暂作为后续部署或加速选项。
 > - 最新进度以 [README.md 开发进度快照](./README.md) 为准。
 
 ---
@@ -29,7 +32,7 @@
 │  │  ┌──────────────────────────────────────────────────────────┐  │ │
 │  │  │  WebGPURenderer (优先) / WebGL 2 (降级)                  │  │ │
 │  │  ├──────────────────────────────────────────────────────────┤  │ │
-│  │  │  Stars (InstancedMesh) ──┐                               │  │ │
+│  │  │  Stars (shader points)  ──┐                              │  │ │
 │  │  │  LightRiver (Tube)        │── 星图场景                   │  │ │
 │  │  │  Constellations (Lines)  ─┘                               │  │ │
 │  │  └──────────────────────────────────────────────────────────┘  │ │
@@ -144,11 +147,11 @@ Astraletter/
 | Next.js | 14+ | App Router，SSR/SSG |
 | React | 18+ | UI 框架 |
 | TypeScript | 5+ | 类型安全 |
-| React Three Fiber | 9+ | 声明式 3D 渲染 |
-| Three.js | r182+ | 3D 引擎 |
-| Drei | 最新 | R3F 组件库 |
-| R3F-Postprocessing | 最新 | 后处理特效 |
-| Transformers.js | 3.8+ | 本地 AI 推理 |
+| React Three Fiber | 8.x 当前 / 9+ 目标 | 声明式 3D 渲染 |
+| Three.js | 0.185 当前 / r182+ 目标 | 3D 引擎 |
+| Drei | 9.x 当前 | R3F 组件库 |
+| R3F-Postprocessing | 已引入 | Bloom 后处理特效 |
+| Transformers.js | 已安装，暂未接线 | Phase 1.5 本地 AI 推理 |
 | Tailwind CSS | 3.4+ | 样式框架 |
 
 ### 后端技术栈
@@ -161,7 +164,8 @@ Astraletter/
 | Neon | 最新 | PostgreSQL 托管 |
 | Socket.io | 最新 | 实时通信 |
 | Lucia Auth | 3+ | 认证 |
-| Cloudflare Workers/Pages | - | 部署 |
+| Vercel | - | 当前首发托管 |
+| Cloudflare Workers/Pages | - | 后续目标部署选项 |
 
 ---
 
@@ -176,11 +180,12 @@ Astraletter/
        ↓
    消息数组
        ↓
-   [Web Worker]
+   [generateUniverse 当前启用]
        ↓
    ┌──────────────────┐
-   │ 情感分析 + 嵌入  │
-   │ 话题聚类         │
+   │ 启发式情感       │
+   │ 时间窗星座       │
+   │ 消息权重         │
    └──────────────────┘
        ↓
    星图结构数据
@@ -192,6 +197,8 @@ Astraletter/
    [R3F Render]
        ↓
    显示星图
+
+Phase 1.5 重新启用后，`Web Worker + Transformers.js` 会在不上传原文的前提下回填模型情感与嵌入聚类，并重算星图结构。
 ```
 
 ### 数据持久化流程
@@ -216,7 +223,7 @@ Astraletter/
 
 1. **原始聊天数据永不离开浏览器**
 2. **仅存储加密后的星图结构**
-3. **AI 计算 100% 本地完成**
+3. **AI 增强重新启用时，计算必须 100% 本地完成**
 4. **云端仅存储匿名统计**
 
 ---
@@ -224,9 +231,9 @@ Astraletter/
 ## 📊 性能优化策略
 
 ### 3D 渲染优化
-- 使用 `InstancedMesh` 渲染所有星星
-- `WebGPURenderer` 优先，自动降级
-- `MeshStandardMaterial` 移动端优化
+- 当前实现采用 shader points 渲染所有数据星，保留 BufferGeometry / attribute 驱动路径
+- `WebGPURenderer` 仍为后续目标，当前以 WebGL + three.js 为主
+- 中心星云与闪烁星点走自定义 shader，Bloom 用于增强中心层次
 
 ### AI 推理优化
 - q4/q8 量化模型

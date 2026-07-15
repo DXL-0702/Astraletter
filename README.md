@@ -24,27 +24,29 @@
 
 ---
 
-## 📈 开发进度快照（2026-07-10）
+## 📈 开发进度快照（2026-07-15）
 
-> 当前阶段：**Phase 1 · 星宇初现（进行中）**
+> 当前阶段：**Phase 1 · 星宇初现（M1/M3 已完成，准备首次部署验证）**
 
 | 模块 | 状态 | 说明 |
 |------|------|------|
 | 项目脚手架 | ✅ | Next.js 14 + TypeScript + App Router |
-| 设计系统 | ✅ | 两层 OKLCH token + shadcn/ui + lucide + React Bits 移植 + 字体（Sora / Cinzel / ZCOOL XiaoWei） |
+| 设计系统 | ✅ | 两层 OKLCH token + shadcn/ui + lucide + React Bits 移植 + 字体（Sora / Marcellus / Noto Serif SC） |
 | 聊天记录解析 | ✅ | 微信 / WhatsApp / 纯文本 + UTF-8→GBK 回退，零依赖 |
 | 真实导入面 | ✅ | 状态机、文件校验、错误恢复、帮助、移动端导航 |
-| 本地 AI 集成 | 🚧 规划 | Transformers.js（情感 / 嵌入 / 聚类）待引入 |
-| 3D 星图 | 🚧 规划 | 当前为 ogl 星云背景；React Three Fiber 星图待实现 |
-| 星图生成 / 交互 | 🚧 规划 | 静态星图、旋转缩放、光河漫游 |
+| 确定性星宇生成 | ✅ | `lib/universe/generate.ts` 将消息映射为星辰、时间窗星座、情感启发式颜色与亮度 |
+| 3D 星图渲染 | ✅ | R3F + three.js 点云星场、中心恒星云、星座连线、Bloom、冷暖星云氛围 |
+| 全景漫游交互 | ✅ | 自研 `FlyController`：orbit / target-lock / free-fly、拖拽视差、滚轮缩放、WASD 飞行、点击选星 |
+| 本地 AI 增强 | ⏸ Phase 1.5 | Transformers.js worker 代码保留但未接线，不进入当前活动构建路径 |
+| 首次部署 | 🚧 准备中 | 计划 Vercel 托管 + 阿里云域名解析；首轮保留 Google Fonts 并观察真实首屏表现 |
 
-状态图例：✅ 已落地 · 🚧 规划中 / 未开始
+状态图例：✅ 已落地 · 🚧 进行中 / 准备中 · ⏸ 暂缓 · ⏳ 未开始
 
 ---
 
 ## 🚀 功能与状态
 
-> ✅ 已落地 · 🚧 规划中（详见 [开发进度快照](#-开发进度快照2026-07-10)）
+> ✅ 已落地 · 🚧 准备中 · ⏸ 暂缓 · ⏳ 未开始（详见 [开发进度快照](#-开发进度快照2026-07-15)）
 
 ### 1. 数据导入与隐私保护
 - ✅ 微信 / WhatsApp TXT 导入（含 GBK 编码回退）
@@ -53,14 +55,15 @@
 - 🚧 端到端加密存储
 
 ### 2. 宇宙生成引擎
-- 🚧 情感极性分析（当前仅浏览器内轻量启发式，用于背景配色）
-- 🚧 智能话题聚类
+- ✅ 启发式情感极性分析（当前用于星辰颜色与导入背景色相）
+- ✅ 确定性星图结构生成（时间螺旋、消息权重、时间窗星座、稳定随机种子）
+- ⏸ 智能话题聚类（Transformers.js 增强暂缓至 Phase 1.5）
 - 🚧 诗意星座命名
-- 🚧 动态星图结构生成
 
 ### 3. 3D 交互体验
-- 🚧 双视角漫游（宏观 / 飞行）
-- 🚧 点击查看对话气泡
+- ✅ 宏观环绕 / 目标锁定 / 第一人称飞行基础漫游
+- ✅ 点击星辰查看原始消息与情感标签
+- 🚧 光河时间轴与完整双视角 UI
 - 🚧 AI 星语翻译
 - 🚧 AR 模式（增强版）
 
@@ -77,14 +80,15 @@
 | 框架 | Next.js 14（App Router）+ React 18 + TypeScript 5 |
 | 样式 | Tailwind CSS 3.4 + shadcn/ui（Radix 基座）+ lucide-react |
 | 动效 | motion（v12）|
-| 星空背景 | ogl（WebGL 星云）|
+| 3D 星宇 | React Three Fiber + Three.js + Drei + R3F Postprocessing |
+| 背景 | ogl 导入页星云 + R3F 星宇页星云/点云 |
 | 包管理 | npm |
 
-### 后续阶段规划（尚未引入）
+### 后续阶段规划（待接线 / 待引入）
 | 层级 | 技术 | 阶段 |
 |------|------|------|
-| 3D 星图 | React Three Fiber + Three.js（WebGPU 优先） | Phase 1 后期 / Phase 2 |
-| 本地 AI | Transformers.js（情感 / 嵌入 / 聚类） | Phase 1 后期 |
+| 本地 AI | Transformers.js（情感 / 嵌入 / 聚类） | Phase 1.5 |
+| 光河 / 星语 | R3F Tube/粒子 + 本地或授权 AI 改写 | Phase 2 |
 | 后端 | Hono + Bun + Neon (PostgreSQL) + Drizzle ORM | Phase 3 |
 | 实时 / 认证 | Socket.io + Lucia Auth | Phase 3 |
 
@@ -96,8 +100,9 @@
 
 | 阶段 | 目标 | 状态 |
 |------|------|------|
-| **Phase 1** | 星宇初现 — TXT 导入 + 本地解析 + 静态 3D 星图 | 🚧 进行中（导入与 UI 框架已完成） |
-| **Phase 2** | 光河漫游 — 飞行视角 + 点击交互 | ⏳ |
+| **Phase 1** | 星宇初现 — TXT 导入 + 本地解析 + 确定性 3D 星图 | ✅ M1/M3 完成，待首次部署与真实设备验证 |
+| **Phase 1.5** | 本地 AI 增强 — 情感 / 嵌入 / 聚类 | ⏸ 暂缓 |
+| **Phase 2** | 光河漫游 — 时间光河 + 视角 UI + 星语翻译 | ⏳ |
 | **Phase 3** | 双人与社交 — 授权机制 + 后端 + AR 模式 | ⏳ |
 
 ---

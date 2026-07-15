@@ -12,11 +12,16 @@ const OUTER_R = 120
 const THICKNESS = 16
 const SPIRAL_TURNS = 3
 
-/** 主星 = 暖色恒星光谱（情感数据）：金（正向）/ 香槟（中性）/ 余烬（负向）。全暖，与冷色星座互补。 */
+/**
+ * 主星 = 冷色恒星光谱（情感数据），与暖金银心互补，让数据星一眼可辨：
+ * 明蓝（正向，高饱和 beacon）/ 钢白（中性，近乎无色）/ 深红（负向，黯淡余烬）。
+ * 正向 vs 中性靠「饱和度」硬拉开（明蓝 vs 近白），保证一眼可分；
+ * 物理-情感双关：越炽热越亮=越正向；最冷的 M 型红星=负向。
+ */
 const STAR_PALETTE: Record<Sentiment, { h: number; s: number; l: number }> = {
-  positive: { h: 46, s: 1.0, l: 0.6 }, // 纯金
-  neutral: { h: 48, s: 0.6, l: 0.72 }, // 香槟
-  negative: { h: 14, s: 1.0, l: 0.56 }, // 鲜明余烬红
+  positive: { h: 215, s: 0.55, l: 0.76 }, // 明蓝 beacon（高饱和，与中性钢白拉开）
+  neutral: { h: 200, s: 0.05, l: 0.72 }, // 钢白（近乎无色，沉静多数）
+  negative: { h: 2, s: 0.9, l: 0.5 }, // 深红余烬（最冷恒星，黯淡）
 }
 
 function mulberry32(seed: number) {
@@ -45,7 +50,7 @@ function sentimentColor(s: Sentiment, brightness: number): [number, number, numb
   return [r * brightness, g * brightness, b * brightness]
 }
 
-/** 星座 = 冷色宝石调（结构线/目录），与暖色主星互补、不撞色（青/水蓝/薄荷）。 */
+/** 星座 = 冷色宝石调（结构线/目录），与冷色主星同谱、与暖金银心互补（青/水蓝/薄荷）。 */
 const CLUSTER_PALETTE = [176, 160, 190, 150, 170]
 
 /** 沿时间线均匀采样，保持时间分布。导出供 AI 层处理同一批星辰。 */

@@ -61,6 +61,7 @@ const config: Config = {
           hover: "var(--starlight-hover)",
         },
         magic: "var(--magic)",
+        stellar: "var(--stellar)",
         danger: "var(--danger)",
         success: "var(--success)",
         ink: {

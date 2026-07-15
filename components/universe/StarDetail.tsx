@@ -13,16 +13,16 @@ const SENT_LABEL: Record<Star["sentiment"], string> = {
   negative: "负向",
 }
 
-function sentVariant(s: Star["sentiment"]): "starlight" | "outline" | "destructive" {
-  if (s === "positive") return "starlight"
+function sentVariant(s: Star["sentiment"]): "stellar" | "outline" | "destructive" {
+  if (s === "positive") return "stellar"
   if (s === "negative") return "destructive"
   return "outline"
 }
 
-const LEGEND: { hue: number; label: string }[] = [
-  { hue: 40, label: "正向" },
-  { hue: 210, label: "中性" },
-  { hue: 345, label: "负向" },
+const LEGEND: { color: string; label: string }[] = [
+  { color: "hsl(215 55% 76%)", label: "正向 · 明蓝" },
+  { color: "hsl(200 8% 72%)", label: "中性 · 钢白" },
+  { color: "hsl(2 90% 50%)", label: "负向 · 深红" },
 ]
 
 interface Props {
@@ -142,7 +142,7 @@ function EmptyBody() {
           <div key={l.label} className="flex items-center gap-2 text-xs text-muted-foreground">
             <span
               className="h-2 w-2 rounded-full"
-              style={{ backgroundColor: `hsl(${l.hue} 70% 62%)`, boxShadow: `0 0 8px hsl(${l.hue} 70% 62%)` }}
+              style={{ backgroundColor: l.color, boxShadow: `0 0 8px ${l.color}` }}
             />
             {l.label}
           </div>
